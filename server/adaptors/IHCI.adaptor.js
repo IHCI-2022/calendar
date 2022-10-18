@@ -1,7 +1,7 @@
 import request from 'request';
 
 const crypto = require('crypto');
-const hostname = 'http://39.108.68.159:5000';
+const hostname = 'http://localhost:5000';
 
 const generateCode = (serverName, timestamp) => {
   const secret = 'ihci';
