@@ -49,6 +49,9 @@ export class CalendarView extends Component {
       thisMonthSchedule: [[], [], [], [], []],
       selectScheduleInfo: [],
       ifLogin: false,
+      teamMember: [],
+      ifSelectAllPeople: false,
+      noticeMembers: [],
     };
     this.clickRowChange = this.clickRowChange.bind(this);
     this.calendarOptionsChange = this.calendarOptionsChange.bind(this);
@@ -75,10 +78,13 @@ export class CalendarView extends Component {
     this.calendarListener = this.calendarListener.bind(this);
     this.calendarShowFilter = this.calendarShowFilter.bind(this);
     this.setCalendarShowFilter = this.setCalendarShowFilter.bind(this);
+    this.selectAllPeople = this.selectAllPeople.bind(this);
+    this.changeSelectAllPeople = this.changeSelectAllPeople.bind(this);
   }
 
   componentWillMount() {
     this.initYearMonthDate();
+    this.setMemberInfo();
     document.addEventListener('click', this.calendarAddHandle, false);
     // console.log(this.state.nowMonth)
   }
@@ -269,6 +275,62 @@ export class CalendarView extends Component {
         ScheduleList,
       }, () => {
         this.setThisMonthSchedule();
+      });
+    }
+  }
+
+  setMemberInfo() {
+    const teammates = localStorage.getItem('teammates');
+    if (teammates !== null) {
+      const teamMember = teammates.split('-');
+      teamMember.pop();
+      for (let i = 0; i < teamMember.length; i++) {
+        teamMember[i] = JSON.parse(teamMember[i]);
+      }
+      this.setState({
+        teamMember,
+      });
+    }
+  }
+
+  changeSelectAllPeople() {
+    const memberLength = this.state.teamMember.length;
+    for (let i = 0; i < memberLength; i++) {
+      if (!document.getElementsByClassName('memberCheckbox')[i].checked) {
+        this.setState({
+          ifSelectAllPeople: true,
+        }, () => {
+          document.getElementById('selectAllPeople').style.background = this.state.ifSelectAllPeople ? '#efefef' : '#44acb6';
+          document.getElementById('selectAllPeople').style.color = this.state.ifSelectAllPeople ? '#777' : '#fff';
+        });
+        return;
+      }
+    }
+    this.setState({
+      ifSelectAllPeople: false,
+    }, () => {
+      this.selectAllPeople();
+    });
+    return;
+  }
+
+  selectAllPeople() {
+    const memberLength = this.state.teamMember.length;
+    document.getElementById('selectAllPeople').style.background = this.state.ifSelectAllPeople ? '#efefef' : '#44acb6';
+    document.getElementById('selectAllPeople').style.color = this.state.ifSelectAllPeople ? '#777' : '#fff';
+    if (this.state.ifSelectAllPeople) {
+      for (let i = 0; i < memberLength; i++) {
+        document.getElementsByClassName('memberCheckbox')[i].checked = '';
+      }
+      this.setState({
+        ifSelectAllPeople: false,
+      });
+    } else {
+      for (let i = 0; i < memberLength; i++) {
+        document.getElementsByClassName('memberCheckbox')[i].checked = 'true';
+      }
+      this.setState({
+        ifSelectAllPeople: true,
       });
     }
   }
@@ -524,6 +586,16 @@ export class CalendarView extends Component {
     // const ifRepeat = this.state.repeatOption;
     // const ifRemind = this.state.remindOption;
     const location = document.getElementById('location').value;
+    const members = [];
+    const memberLength = this.state.teamMember.length;
+    for (let i = 0; i < memberLength; i++) {
+      if (document.getElementsByClassName('memberCheckbox')[i].checked) {
+        members.push(this.state.teamMember[i].id);
+      }
+    }
+    this.setState({
+      noticeMembers: members,
+    });
     if (calendarId === undefined) {
       // eslint-disable-next-line no-alert
       alert(messages.PleaseCreateCalendar);
@@ -551,6 +623,7 @@ export class CalendarView extends Component {
         // ifRepeat,
         // ifRemind,
         location,
+        members,
       }),
     };
     requestApi(requestUrl, data, this.addFinishOption);
@@ -565,7 +638,16 @@ export class CalendarView extends Component {
         ScheduleList: [[], [], [], [], [], [], []],
         thisMonthSchedule: [[], [], [], [], []],
       });
+      // eslint-disable-next-line no-console
+      // console.log(result);
       this.requestScheduleList();
+      // eslint-disable-next-line array-callback-return
+      const noticeMembers = this.state.noticeMembers;
+      const noticeLength = this.state.noticeMembers.length;
+      for (let i = 0; i < noticeLength; i++) {
+        this.requestRemindMember(noticeMembers[i], result.scheduleId);
+        this.requestNoticeMember(noticeMembers[i], result.scheduleId);
+      }
     } else {
       // eslint-disable-next-line no-alert
       alert(messages.ScheduleAddFailed);
@@ -583,6 +665,48 @@ export class CalendarView extends Component {
       body: JSON.stringify({}),
     };
     requestApi(requestUrl, data, this.setScheduleSave);
+  }
+
+  requestRemindMember(target, scheduleId) {
+    const requestUrl = configUrl.remind;
+    const data = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        target,
+        scheduleId,
+        type: 'CREATE_SCHEDULE',
+      }),
+    };
+    requestApi(requestUrl, data, this.afterRemindMember);
+  }
+
+  requestNoticeMember(userID, scheduleId) {
+    const requestUrl = configUrl.notice;
+    const data = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userID,
+        scheduleId,
+        type: 'CREATE_SCHEDULE',
+      }),
+    };
+    requestApi(requestUrl, data, this.afterNoticeMember);
+  }
+
+  afterRemindMember() {
+    // eslint-disable-next-line no-console
+    // console.log('日程微信通知', result.status);
+  }
+
+  afterNoticeMember() {
+    // eslint-disable-next-line no-console
+    // console.log('日程ihci通知', result.status);
   }
 
   scheduleQuit() {
@@ -720,6 +844,18 @@ export class CalendarView extends Component {
     //     <option key={`repeatOptions${i}`}>{messages.repeatSelect[i]}</option>
     //   );
     // }
+
+    const memberList = [];
+    if (this.state.teamMember.length !== 0) {
+      for (let i = 0; i < this.state.teamMember.length; i++) {
+        memberList.push(
+          <div className={styles.calendarMember} key={`informMember${i}`} onChange={this.changeSelectAllPeople}>
+            <input className="memberCheckbox" type="checkbox" />
+            <span>{this.state.teamMember[i].name}</span>
+          </div>
+        );
+      }
+    }
     return (
       <div className={styles.CalendarViewBorder} id="CalendarView">
         <div className={styles.CalendarTitle}>
@@ -791,6 +927,15 @@ export class CalendarView extends Component {
               <div className={styles.ScheduleItem}>
                 <span>{messages.address}</span>
                 <input className={styles.addressText} id="location" type="text" />
+              </div>
+              <div className={styles.ScheduleItem}>
+                <div className={styles.addMember}>
+                  <div>{messages.scheduleMember}</div>
+                  <div className={styles.selectAllPeople}><span id="selectAllPeople" onClick={this.selectAllPeople}>{messages.allPeople}</span></div>
+                  <div className={styles.MemberList}>
+                    {memberList}
+                  </div>
+                </div>
               </div>
             </div>
             <div className={styles.ScheduleItem}>

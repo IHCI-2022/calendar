@@ -21,5 +21,11 @@ export function delelteRelativeSchedule(calendarId, callback) {
 }
 
 export function getSchedule(scheduleId) {
-  return Schedule.findOne({ scheduleId }).exec();
+  return Schedule.findOne({ scheduleId }).exec((err, scheduleObj) => {
+    if (err) {
+      throw err;
+    } else {
+      return scheduleObj;
+    }
+  });
 }

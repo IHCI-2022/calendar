@@ -66,7 +66,7 @@ export class EditCalendarBar extends Component {
 
   skipToIndexPage() {
     const calendarNewLogin = sessionStorage.getItem('calendarNewLogin');
-    if(calendarNewLogin !== null){
+    if (calendarNewLogin !== null) {
       sessionStorage.setItem('calendarNewLogin', 'false');
     }
     browserHistory.push('/');

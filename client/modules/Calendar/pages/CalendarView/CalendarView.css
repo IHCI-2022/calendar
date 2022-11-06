@@ -95,6 +95,33 @@
   font-weight: lighter;
 }
 
+.MemberList{
+  margin-top: 15px;
+  display: flex;
+}
+
+.selectAllPeople{
+  margin: 0 0 10px;
+}
+
+.selectAllPeople span{
+  display: block;
+  cursor: pointer;
+  width: 52px;
+  padding: 0 8px;
+  margin: 5px 6px 5px 0;
+  color: #777;
+  font-size: 12px;
+  line-height: 20px;
+  border-radius: 10px;
+  background: #efefef;
+}
+
+.selectAllPeople span:active{
+  color: #fff;
+  background-color: #44acb6
+}
+
 .NewScheduleName{
   height: 30px;
   overflow: hidden;

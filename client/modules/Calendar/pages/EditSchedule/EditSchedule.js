@@ -233,7 +233,7 @@ export class EditSchedule extends Component {
     requestApi(requestUrl, data, this.ScheduleEditSave);
   }
 
-  requestRemindMember(target, scheduleId){
+  requestRemindMember(target, scheduleId) {
     const requestUrl = configUrl.remind;
     const data = {
       method: 'POST',
@@ -243,13 +243,34 @@ export class EditSchedule extends Component {
       body: JSON.stringify({
         target,
         scheduleId,
+        type: 'EDIT_SCHEDULE',
       }),
     };
     requestApi(requestUrl, data, this.afterRemindMember);
   }
 
-  afterRemindMember(){
-    // TODO: 通知成功返回事件
+  requestNoticeMember(userID, scheduleId) {
+    const requestUrl = configUrl.notice;
+    const data = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userID,
+        scheduleId,
+        type: 'EDIT_SCHEDULE',
+      }),
+    };
+    requestApi(requestUrl, data, this.afterNoticeMember);
+  }
+
+  afterRemindMember() {
+    // TODO: 通知微信成功返回事件
+  }
+
+  afterNoticeMember() {
+    // TODO: 通知ihci成功返回事件
   }
 
   printResult() {
@@ -262,12 +283,13 @@ export class EditSchedule extends Component {
       for (let i = 0; i < memberLength; i++) {
         if (document.getElementsByClassName('memberCheckbox')[i].checked) {
           this.requestRemindMember(this.state.teamMember[i].id, this.state.scheduleId);
+          this.requestNoticeMember(this.state.teamMember[i].id, this.state.scheduleId);
         }
         if (i === memberLength - 1) {
+          // eslint-disable-next-line new-cap
           this.ScheduleEditQuit();
         }
       }
-
     } else {
       // eslint-disable-next-line no-alert
       alert(messages.ScheduleEditFailed);
@@ -276,7 +298,7 @@ export class EditSchedule extends Component {
 
   ScheduleEditQuit() {
     const calendarNewLogin = sessionStorage.getItem('calendarNewLogin');
-    if(calendarNewLogin !== null){
+    if (calendarNewLogin !== null) {
       sessionStorage.setItem('calendarNewLogin', 'false');
     }
     browserHistory.push('/');

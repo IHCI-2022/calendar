@@ -44,6 +44,21 @@ export function remindIHCI(target, schedule, source, callback) {
   });
 }
 
+export function noticeIHCI(userID, Obj, type, callback) {
+  const authCode = generateCode('calendar', Date.now() - Date.now() % 60000);
+  const url = `${hostname}/api/calendar/notice`;
+  const data = {
+    userID,
+    authCode,
+    Obj,
+    type,
+  };
+  const headers = { 'Content-type': 'application/json' };
+  request.post({ url, headers, body: JSON.stringify(data) }, () => {
+    callback();
+  });
+}
+
 export function getTeammateIdsIHCI(teamId, callback) {
   const authCode = generateCode('calendar', Date.now() - Date.now() % 60000);
   const url = `${hostname}/api/member`;

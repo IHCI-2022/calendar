@@ -101,7 +101,7 @@ export class DetailSchedule extends Component {
         informMember: schedule.members,
         location: '',
       };
-      if (schedule.location !== undefined){
+      if (schedule.location !== undefined) {
         scheduleInfo.location = schedule.location;
       }
       this.requestCalendarInfo(schedule.calendarId);
@@ -292,7 +292,7 @@ export class DetailSchedule extends Component {
     document.getElementById('deleteScheduleRemind').style.display = 'block';
   }
 
-  requestRemindMember(target, scheduleId){
+  requestRemindMember(target, scheduleId) {
     const requestUrl = configUrl.remind;
     const data = {
       method: 'POST',
@@ -302,13 +302,36 @@ export class DetailSchedule extends Component {
       body: JSON.stringify({
         target,
         scheduleId,
+        type: 'EDIT_SCHEDULE',
       }),
     };
     requestApi(requestUrl, data, this.afterRemindMember);
   }
 
-  afterRemindMember(){
-    // TODO: 通知成功返回事件
+  requestNoticeMember(userID, scheduleId) {
+    const requestUrl = configUrl.notice;
+    const data = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userID,
+        scheduleId,
+        type: 'EDIT_SCHEDULE',
+      }),
+    };
+    requestApi(requestUrl, data, this.afterNoticeMember);
+  }
+
+  afterRemindMember() {
+    // eslint-disable-next-line no-console
+    // console.log('日程微信通知', result.status);
+  }
+
+  afterNoticeMember() {
+    // eslint-disable-next-line no-console
+    // console.log('日程ihci通知', result.status);
   }
 
   afterScheduleDelete(result) {
@@ -326,7 +349,7 @@ export class DetailSchedule extends Component {
 
   skipToIndex() {
     const calendarNewLogin = sessionStorage.getItem('calendarNewLogin');
-    if(calendarNewLogin !== null){
+    if (calendarNewLogin !== null) {
       sessionStorage.setItem('calendarNewLogin', 'false');
     }
     browserHistory.push('/');
@@ -508,6 +531,7 @@ export class DetailSchedule extends Component {
       for (let i = 0; i < memberLength; i++) {
         if (document.getElementsByClassName('memberCheckbox')[i].checked) {
           this.requestRemindMember(this.state.teamMember[i].id, this.state.scheduleId);
+          this.requestNoticeMember(this.state.teamMember[i].id, this.state.scheduleId);
         }
         if (i === memberLength - 1) {
           this.requestScheduleInfo();
@@ -618,9 +642,9 @@ export class DetailSchedule extends Component {
       }
     }
 
-    if (this.state.setScheduleInfo.location !== ''){
+    if (this.state.setScheduleInfo.location !== '') {
       scheduleLocation.push(
-        <div className={styles.scheduleLocation} key='locationKey'>
+        <div className={styles.scheduleLocation} key="locationKey">
           {messages.location + messages.colon}
           <span>{this.state.setScheduleInfo.location}</span>
         </div>

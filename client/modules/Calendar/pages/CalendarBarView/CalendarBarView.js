@@ -116,6 +116,7 @@ export class CalendarBarView extends Component {
           calendarId={calendarList[i].calendarId} color={calendarList[i].color}
           creatorId={calendarList[i].creatorId} dateCreated={calendarList[i].dateCreated} deleteFlag={calendarList[i].deleteFlag}
           name={calendarList[i].name} teamId={calendarList[i].teamId} key={`calendarBar${i}`} keyNum={i} setCalendarNum={(calendarNum) => { this.setCalendarNum(calendarNum); }}
+          // eslint-disable-next-line max-len
           modifyColor={(this.state.calendarNum === i) ? this.state.modifyColor : ''} showSmallEditColor={(name, color, calendarId) => { this.showSmallEditColor(name, color, calendarId); }}
           setSmallEditColor={(top, left) => { this.setSmallEditColor(top, left); }} hiddenSmallEditColor={() => { this.hiddenSmallEditColor(); }}
         />);

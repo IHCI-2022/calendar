@@ -66,7 +66,7 @@ export class AddCalendarBar extends Component {
 
   skipToIndex() {
     const calendarNewLogin = sessionStorage.getItem('calendarNewLogin');
-    if(calendarNewLogin !== null){
+    if (calendarNewLogin !== null) {
       sessionStorage.setItem('calendarNewLogin', 'false');
     }
     browserHistory.push('/');
